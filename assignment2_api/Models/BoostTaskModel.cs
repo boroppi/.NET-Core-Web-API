@@ -19,5 +19,8 @@
 
         // reference the Customer model for CRUD
         public DbSet<Customer> Customers { get; set; }
+
+        // reference the Booster model for CRUD
+        public DbSet<Booster> Boosters { get; set; }
     }
 }

@@ -8,13 +8,10 @@ namespace assignment2_api.Models
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    [Table("Customer")]
-    public class Customer
+    [Table("Booster")]
+    public class Booster
     {
         [Key]
-        public int CustomerId { get; set; }
-
-        [ForeignKey("Booster")]
         public int BoosterId { get; set; }
 
         [Required]
@@ -36,5 +33,7 @@ namespace assignment2_api.Models
         public DateTime DateCreated { get; set; }
 
         public DateTime? LastLogon { get; set; }
+
+        public bool? IsAvailable { get; set; }
     }
 }
