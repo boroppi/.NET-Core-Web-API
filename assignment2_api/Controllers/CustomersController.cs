@@ -7,13 +7,14 @@
     using assignment2_api.Models;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
 
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
     {
         //db connection
-        private BoostTaskModel db;
+        private readonly BoostTaskModel db;
 
         public CustomersController(BoostTaskModel db)
         {
@@ -22,16 +23,16 @@
 
         // GET: api/customers
         [HttpGet]
-        public IEnumerable<Customer> Get()
+        public async Task<IEnumerable<Customer>> Get()
         {
-            return this.db.Customers.OrderBy(c => c.FullName).ToList();
+            return await this.db.Customers.OrderBy(c => c.FullName).ToListAsync();
         }
 
         // GET: api/customers/1
         [HttpGet("{id}")]
-        public ActionResult Get(int id)
+        public async Task<ActionResult> Get([FromRoute] int id)
         {
-            Customer customer = this.db.Customers.Find(id);
+            Customer customer = await this.db.Customers.SingleOrDefaultAsync(c => c.CustomerId == id);
 
             if (customer == null)
             {
@@ -42,7 +43,7 @@
 
         // POST: api/albums
         [HttpPost]
-        public ActionResult Post([FromBody] Customer customer)
+        public async Task<ActionResult> Post([FromBody] Customer customer)
         {
             if (!ModelState.IsValid)
             {
@@ -50,15 +51,17 @@
             }
 
             this.db.Customers.Add(customer);
-            this.db.SaveChanges();
+            await this.db.SaveChangesAsync();
             return this.CreatedAtAction("Post", customer);
         }
 
         // PUT: api/albums/1
         [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] Customer customer)
+        public async Task<ActionResult> Put(int id, [FromBody] Customer customer)
         {
-            if (this.db.Customers.Find(id) == null)
+            Customer _customer = await this.db.Customers.SingleOrDefaultAsync(c => c.CustomerId == id);
+
+            if (_customer == null)
             {
                 return this.NotFound();
             }
@@ -69,15 +72,16 @@
             }
 
             this.db.Entry(customer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            this.db.SaveChanges();
+            await this.db.SaveChangesAsync();
+
             return this.NoContent();
         }
 
         // DELETE: api/albums/1
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var customer = this.db.Customers.Find(id);
+            Customer customer = await this.db.Customers.SingleOrDefaultAsync(c => c.CustomerId == id);
 
             if (customer == null)
             {
@@ -90,7 +94,8 @@
             }
 
             this.db.Customers.Remove(customer);
-            this.db.SaveChanges();
+            await this.db.SaveChangesAsync();
+
             return this.Ok();
         }
     }

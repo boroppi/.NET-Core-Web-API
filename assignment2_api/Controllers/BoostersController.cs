@@ -7,13 +7,14 @@
     using assignment2_api.Models;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
 
     [Route("api/[controller]")]
     [ApiController]
     public class BoostersController : ControllerBase
     {
         //db connection
-        private BoostTaskModel db;
+        private readonly BoostTaskModel db;
 
         public BoostersController(BoostTaskModel db)
         {
@@ -22,16 +23,16 @@
 
         // GET: api/boosters
         [HttpGet]
-        public IEnumerable<Booster> Get()
+        public async Task<IEnumerable<Booster>> Get()
         {
-            return this.db.Boosters.OrderBy(b => b.FullName).ToList();
+            return await this.db.Boosters.OrderBy(b => b.FullName).ToListAsync();
         }
 
         // GET: api/boosters/1
         [HttpGet("{id}")]
-        public ActionResult Get(int id)
+        public async Task<ActionResult> Get([FromRoute] int id)
         {
-            var booster = this.db.Boosters.Find(id);
+            var booster = await this.db.Boosters.SingleOrDefaultAsync(b => b.BoosterId == id);
 
             if (booster != null)
             {
@@ -43,7 +44,7 @@
 
         // POST: api/boosters
         [HttpPost]
-        public ActionResult Post([FromBody] Booster booster)
+        public async Task<ActionResult> Post([FromBody] Booster booster)
         {
             if (!ModelState.IsValid)
             {
@@ -51,15 +52,18 @@
             }
 
             this.db.Boosters.Add(booster);
-            this.db.SaveChanges();
+            await this.db.SaveChangesAsync();
+
             return this.CreatedAtAction("Post", booster);
         }
 
         // PUT: api/boosters
         [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] Booster booster)
+        public async Task<ActionResult> Put([FromRoute] int id, [FromBody] Booster booster)
         {
-            if (this.db.Boosters.Find(id) == null)
+            var _booster = await this.db.Boosters.SingleOrDefaultAsync(b => b.BoosterId == id);
+
+            if (_booster == null)
             {
                 return this.NotFound();
             }
@@ -70,15 +74,15 @@
             }
 
             this.db.Entry(booster).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            this.db.SaveChanges();
+            await this.db.SaveChangesAsync();
             return this.NoContent();
         }
 
         // DELETE: api/boosters
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var booster = this.db.Boosters.Find(id);
+            var booster = await this.db.Boosters.SingleOrDefaultAsync(b => b.BoosterId == id);
 
             if (booster == null)
             {
@@ -91,7 +95,8 @@
             }
 
             this.db.Boosters.Remove(booster);
-            this.db.SaveChanges();
+            await this.db.SaveChangesAsync();
+
             return this.Ok();
         }
     }
