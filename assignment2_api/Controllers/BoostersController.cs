@@ -61,20 +61,34 @@
         [HttpPut("{id}")]
         public async Task<ActionResult> Put([FromRoute] int id, [FromBody] Booster booster)
         {
-            var _booster = await this.db.Boosters.SingleOrDefaultAsync(b => b.BoosterId == id);
-
-            if (_booster == null)
-            {
-                return this.NotFound();
-            }
-
             if (!ModelState.IsValid)
             {
                 return this.BadRequest(ModelState);
             }
 
+            if (id != booster.BoosterId)
+            {
+                return this.BadRequest();
+            }
+
             this.db.Entry(booster).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            await this.db.SaveChangesAsync();
+
+            try
+            {
+                await this.db.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (await this.db.Boosters.FindAsync(id) == null)
+                {
+                    return this.NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             return this.NoContent();
         }
 

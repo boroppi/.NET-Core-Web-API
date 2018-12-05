@@ -11,10 +11,10 @@
     /// </summary>
     public class BoostTaskModel : DbContext
     {
-        public BoostTaskModel(DbContextOptions<BoostTaskModel>options)
+        public BoostTaskModel(DbContextOptions<BoostTaskModel> options)
             : base(options)
         {
-            
+
         }
 
         // reference the Customer model for CRUD

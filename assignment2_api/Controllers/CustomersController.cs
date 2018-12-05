@@ -25,7 +25,7 @@
         [HttpGet]
         public async Task<IEnumerable<Customer>> Get()
         {
-            return await this.db.Customers.OrderBy(c => c.FullName).ToListAsync();
+            return await this.db.Customers.OrderBy(c => c.FirstName).ToListAsync();
         }
 
         // GET: api/customers/1
@@ -57,22 +57,34 @@
 
         // PUT: api/albums/1
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] Customer customer)
+        public async Task<ActionResult> Put([FromRoute] int id, [FromBody] Customer customer)
         {
-            Customer _customer = await this.db.Customers.SingleOrDefaultAsync(c => c.CustomerId == id);
-
-            if (_customer == null)
-            {
-                return this.NotFound();
-            }
-
             if (!ModelState.IsValid)
             {
                 return this.BadRequest(ModelState);
             }
 
+            if (id != customer.CustomerId)
+            {
+                return this.BadRequest();
+            }
+
             this.db.Entry(customer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            await this.db.SaveChangesAsync();
+            try
+            {
+                await this.db.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (await this.db.Customers.SingleOrDefaultAsync(c => c.CustomerId == id) == null)
+                {
+                    return this.NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return this.NoContent();
         }

@@ -8,6 +8,8 @@ namespace assignment2_api.Models
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using Newtonsoft.Json;
+
     [Table("Customer")]
     public class Customer
     {
@@ -26,6 +28,7 @@ namespace assignment2_api.Models
         public string LastName { get; set; }
 
         [NotMapped]
+        [JsonIgnore]
         public string FullName => $"{FirstName} {LastName}";
 
         [Required]
